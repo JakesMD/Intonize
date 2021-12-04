@@ -1,4 +1,4 @@
-# intonize
+# Intonize
 
 A new Flutter project.
 
