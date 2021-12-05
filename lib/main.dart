@@ -4,7 +4,8 @@ import 'package:intonize/controllers/tunerController.dart';
 import 'package:intonize/views/pages/home/homePage.dart';
 
 void main() async {
-  await Get.putAsync(() => TunerController().init());
+  // Initializes the TunerController so we can find it later.
+  Get.put(TunerController());
   runApp(MyApp());
 }
 

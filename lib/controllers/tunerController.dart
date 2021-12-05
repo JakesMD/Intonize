@@ -1,40 +1,72 @@
+import 'dart:math';
 import 'dart:typed_data';
-
+import 'package:flutter/services.dart';
 import 'package:flutter_audio_capture/flutter_audio_capture.dart';
+import 'package:flutter_midi/flutter_midi.dart';
 import 'package:get/get.dart';
 import 'package:pitch_detector_dart/pitch_detector.dart';
 import 'package:pitchupdart/instrument_type.dart';
 import 'package:pitchupdart/pitch_handler.dart';
 
-class TunerController extends GetxController {
-  final _audioRecorder = FlutterAudioCapture();
-  final _pitchDetectorDart = PitchDetector(44100, 2000);
-  final _pitchupDart = PitchHandler(InstrumentType.guitar);
+class TunerController extends GetxController with StateMixin {
+  // Removes the need to call Get.find() all the time.
+  static TunerController get to => Get.find();
+
+  final FlutterAudioCapture _audioRecorder = FlutterAudioCapture();
+  final PitchDetector _pitchDetectorDart = PitchDetector(44100, 2000);
+  final PitchHandler _pitchupDart = PitchHandler(InstrumentType.guitar);
+  final FlutterMidi _midi = FlutterMidi();
 
   RxDouble diffCents = 0.0.obs;
   RxDouble frequency = 0.0.obs;
   RxString note = "".obs;
-  RxInt octave = 0.obs;
   RxBool isActive = false.obs;
+  RxInt midiNote = 0.obs;
 
-  Future<TunerController> init() async {
-    return this;
+  // Where the loaded sounds are stored.
+  late ByteData _pianoByte;
+  late ByteData _synthByte;
+
+  RxBool isPiano = true.obs;
+
+  int getMidiNote(double freq) => (12 * log(freq / 440) / log(2) + 69).toInt();
+
+  Future<void> _loadMidi() async {
+    _pianoByte = await rootBundle.load('assets/Piano.sf2');
+    _synthByte = await rootBundle.load('assets/Synth.sf2');
+    _midi.prepare(sf2: _pianoByte);
+  }
+
+  Future<void> changeSound() async {
+    _midi.stopMidiNote(midi: midiNote.value);
+    if (isPiano.value) {
+      _midi.changeSound(sf2: _synthByte);
+      isPiano.value = false;
+    } else {
+      _midi.changeSound(sf2: _pianoByte);
+      isPiano.value = true;
+    }
+    update();
   }
 
   Future<void> startCapture() async {
+    change('loading', status: RxStatus.loading());
+    await _loadMidi();
+    print("hi");
     await _audioRecorder.start(listener, onError,
         sampleRate: 44100, bufferSize: 3000);
     note.value = "";
     diffCents.value = 0.0;
-    frequency.value = 0.0;
+    frequency.value = 1.0;
     isActive.value = false;
     update();
+    change('success', status: RxStatus.success());
   }
 
   Future<void> stopCapture() async {
     await _audioRecorder.stop();
     note.value = "";
-    frequency.value = 0.0;
+    frequency.value = 1.0;
     diffCents.value = 0.0;
     isActive.value = false;
     update();
@@ -53,11 +85,21 @@ class TunerController extends GetxController {
       //Uses the pitchupDart library to check a given pitch for a Guitar
       final handledPitchResult = _pitchupDart.handlePitch(result.pitch);
       frequency.value = handledPitchResult.expectedFrequency;
-      diffCents.value = handledPitchResult.diffCents;
+      diffCents.value = -handledPitchResult.diffCents;
       note.value = handledPitchResult.note;
       isActive.value = true;
-    } else
+
+      int newMidiNote = getMidiNote(frequency.value);
+      if (newMidiNote != midiNote.value) {
+        _midi.stopMidiNote(midi: midiNote.value);
+        midiNote.value = newMidiNote;
+        _midi.playMidiNote(midi: midiNote.value);
+      }
+    } else {
       isActive.value = false;
+      _midi.stopMidiNote(midi: midiNote.value);
+      midiNote.value = 0;
+    }
     update();
   }
 

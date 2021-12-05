@@ -1,16 +1,25 @@
 # Intonize
 
-A new Flutter project.
+A Flutter app that helps you practice and improve your intonation on your instrument. 🎻
 
-## Getting Started
+> ⚠️ This app is still under development (v0.0.1) ⚠️
 
-This project is a starting point for a Flutter application.
 
-A few resources to get you started if this is your first Flutter project:
+## How it works
+1. Plug your headphones in and set the volume just right so that you can still hear your instrument. 🎧
+2. Practice your piece slowly. Note for note.
+3. The app will detect the note you're playing and play the same note in tune in your headphones.
+4. Listen carefully and only move on to the next note once your current note is perfectly in tune with the sound in your headphones.
+5. Do this multiple times. This is a very effective way to improve your intonation.
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+## Useful tips
+- Read the gauge to see whether you're playing too high or too low. If the pointer is pointing at the white section, then you're playing in tune.
+- Tap the 🎹 icon to change the sound.
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Todo
+- [ ] Improve sensitivity and accuracy
+- [ ] Option to change standard tuning (440Hz)
+- [ ] Add more sounds
+- [ ] Improve performance / speed
+- [ ] Score your intonation
+- [ ] Link to Firebase Crashlytics

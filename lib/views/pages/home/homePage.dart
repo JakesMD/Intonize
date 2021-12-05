@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intonize/constants/colors.dart';
 import 'package:intonize/controllers/tunerController.dart';
+import 'package:intonize/views/pages/home/widgets/centsText.dart';
+import 'package:intonize/views/pages/home/widgets/hertzText.dart';
+import 'package:intonize/views/pages/home/widgets/soundToggleIcon.dart';
 import 'package:intonize/views/pages/home/widgets/tuningGauge.dart';
 
 class HomePage extends StatelessWidget {
-  final TunerController _tunerController = Get.find();
-
   HomePage({Key? key}) : super(key: key);
 
   @override
@@ -15,33 +16,33 @@ class HomePage extends StatelessWidget {
       backgroundColor: AppColors.homePage,
       body: Center(
         child: GetBuilder<TunerController>(
-            initState: (_) => _tunerController.startCapture(),
-            builder: (_) {
-              final double frequency = _tunerController.frequency.value;
-              final double diffCents = _tunerController.diffCents.value;
-              final bool isActive = _tunerController.isActive.value;
-              final String note = _tunerController.note.value;
-
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    diffCents.toInt().toString() + '¢',
-                    style:
-                        TextStyle(color: AppColors.gaugePrimary, fontSize: 24),
-                  ),
-                  TuningGauge(
-                    diffCents: diffCents,
-                    isActive: isActive,
-                    note: note,
-                  ),
-                  Text(
-                    frequency.toInt().toString() + ' Hz',
-                    style: TextStyle(color: Colors.white.withAlpha(150)),
-                  ),
-                ],
-              );
-            }),
+          initState: (_) => TunerController.to.startCapture(),
+          builder: (_) => Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CentsText(
+                diffCents: TunerController.to.diffCents.value,
+                isActive: TunerController.to.isActive.value,
+              ),
+              TuningGauge(
+                diffCents: TunerController.to.diffCents.value,
+                isActive: TunerController.to.isActive.value,
+                note: TunerController.to.note.value,
+                isLoading: TunerController.to.status == RxStatus.loading(),
+              ),
+              HertzText(
+                frequency: TunerController.to.frequency.value,
+                isActive: TunerController.to.isActive.value,
+              ),
+              SizedBox(height: 30),
+              SoundToggleIcon(
+                isLoading: TunerController.to.status == RxStatus.loading(),
+                isPiano: TunerController.to.isPiano.value,
+                onTap: TunerController.to.changeSound,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

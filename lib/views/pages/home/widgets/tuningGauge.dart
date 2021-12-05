@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intonize/constants/colors.dart';
+import 'package:intonize/constants/numbers.dart';
 import 'package:intonize/constants/sizes.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 
@@ -7,76 +9,47 @@ class TuningGauge extends StatelessWidget {
   final double diffCents;
   final String note;
   final bool isActive;
+  final bool isLoading;
 
-  TuningGauge(
-      {Key? key,
-      required this.diffCents,
-      required this.note,
-      this.isActive = false})
-      : super(key: key);
+  TuningGauge({
+    Key? key,
+    required this.diffCents,
+    required this.note,
+    this.isActive = false,
+    this.isLoading = false,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return SfRadialGauge(
       axes: <RadialAxis>[
         RadialAxis(
-          minimum: -50,
-          maximum: 50,
           startAngle: 135,
           endAngle: 45,
           canScaleToFit: true,
-          interval: 20,
+          minimum: -AppNumbers.gaugeValue,
+          maximum: AppNumbers.gaugeValue,
+          interval: AppNumbers.gaugeInterval,
           majorTickStyle: MajorTickStyle(
             color: AppColors.gaugePrimary,
             length: 4,
           ),
           minorTickStyle: MinorTickStyle(
-            color: AppColors.gaugePrimary.withAlpha(150),
+            color: AppColors.gaugePrimary.withAlpha(AppColors.inactiveAlpha),
             length: 2,
           ),
           minorTicksPerInterval: 1,
-          axisLabelStyle:
-              GaugeTextStyle(color: AppColors.gaugePrimary, fontFamily: 'Gugi'),
-          ranges: <GaugeRange>[
-            GaugeRange(
-              startValue: -50,
-              endValue: -10,
-              color: diffCents < -10 && isActive
-                  ? AppColors.lowTuning
-                  : Colors.transparent,
-              startWidth: AppSizes.activeGaugeThickness,
-              endWidth: AppSizes.activeGaugeThickness,
-            ),
-            GaugeRange(
-              startValue: -10,
-              endValue: 10,
-              color: diffCents >= -10 && diffCents <= 10 && isActive
-                  ? AppColors.inTune
-                  : AppColors.inTune.withAlpha(100),
-              startWidth: diffCents >= -10 && diffCents <= 10 && isActive
-                  ? AppSizes.activeGaugeThickness
-                  : AppSizes.inactiveGaugeThickness,
-              endWidth: diffCents >= -10 && diffCents <= 10 && isActive
-                  ? AppSizes.activeGaugeThickness
-                  : AppSizes.inactiveGaugeThickness,
-            ),
-            GaugeRange(
-              startValue: 10,
-              endValue: 50,
-              color: diffCents > 10 && isActive
-                  ? AppColors.highTuning
-                  : Colors.transparent,
-              startWidth: AppSizes.activeGaugeThickness,
-              endWidth: AppSizes.activeGaugeThickness,
-            )
-          ],
+          axisLabelStyle: GaugeTextStyle(
+            color: AppColors.gaugePrimary,
+            fontFamily: 'Gugi',
+          ),
           axisLineStyle: AxisLineStyle(
             cornerStyle: CornerStyle.bothFlat,
             thickness: AppSizes.inactiveGaugeThickness,
             gradient: SweepGradient(
               colors: <Color>[
-                AppColors.lowTuning.withAlpha(150),
-                AppColors.highTuning.withAlpha(150),
+                AppColors.lowTuning.withAlpha(AppColors.inactiveAlpha),
+                AppColors.highTuning.withAlpha(AppColors.inactiveAlpha),
               ],
               stops: <double>[0, 1],
             ),
@@ -95,7 +68,7 @@ class TuningGauge extends StatelessWidget {
                       ? AppColors.gaugePrimary
                       : AppColors.gaugePrimary.withOpacity(0),
                 ],
-                stops: <double>[0, 0.75],
+                stops: <double>[0.25, 0.75],
                 begin: Alignment.bottomCenter,
                 end: Alignment.topCenter,
               ),
@@ -105,7 +78,52 @@ class TuningGauge extends StatelessWidget {
               ),
             ),
           ],
+          ranges: <GaugeRange>[
+            // Too low range
+            GaugeRange(
+              startValue: -AppNumbers.gaugeValue,
+              endValue: -AppNumbers.gaugeInTuneValue,
+              color: diffCents < -AppNumbers.gaugeInTuneValue && isActive
+                  ? AppColors.lowTuning
+                  : Colors.transparent,
+              startWidth: AppSizes.activeGaugeThickness,
+              endWidth: AppSizes.activeGaugeThickness,
+            ),
+
+            // In tune range
+            GaugeRange(
+              startValue: -AppNumbers.gaugeInTuneValue,
+              endValue: AppNumbers.gaugeInTuneValue,
+              color: diffCents >= -AppNumbers.gaugeInTuneValue &&
+                      diffCents <= AppNumbers.gaugeInTuneValue &&
+                      isActive
+                  ? AppColors.inTune
+                  : AppColors.inTune.withAlpha(AppColors.inactiveAlpha),
+              startWidth: diffCents >= -AppNumbers.gaugeInTuneValue &&
+                      diffCents <= AppNumbers.gaugeInTuneValue &&
+                      isActive
+                  ? AppSizes.activeGaugeThickness
+                  : AppSizes.inactiveGaugeThickness,
+              endWidth: diffCents >= -AppNumbers.gaugeInTuneValue &&
+                      diffCents <= AppNumbers.gaugeInTuneValue &&
+                      isActive
+                  ? AppSizes.activeGaugeThickness
+                  : AppSizes.inactiveGaugeThickness,
+            ),
+
+            // Too high range
+            GaugeRange(
+              startValue: AppNumbers.gaugeInTuneValue,
+              endValue: AppNumbers.gaugeValue,
+              color: diffCents > AppNumbers.gaugeInTuneValue && isActive
+                  ? AppColors.highTuning
+                  : Colors.transparent,
+              startWidth: AppSizes.activeGaugeThickness,
+              endWidth: AppSizes.activeGaugeThickness,
+            )
+          ],
           annotations: <GaugeAnnotation>[
+            // Note text
             GaugeAnnotation(
               angle: 90,
               positionFactor: 0.4,
@@ -117,6 +135,17 @@ class TuningGauge extends StatelessWidget {
                   color: AppColors.gaugePrimary,
                 ),
               ),
+            ),
+            // Loading indicator
+            GaugeAnnotation(
+              angle: 90,
+              positionFactor: 0.0,
+              widget: isLoading
+                  ? SpinKitWave(
+                      color: AppColors.primary,
+                      size: 50,
+                    )
+                  : Container(),
             ),
           ],
         ),
