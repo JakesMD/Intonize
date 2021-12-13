@@ -142,7 +142,8 @@ class TuningGauge extends StatelessWidget {
               positionFactor: 0.0,
               widget: isLoading
                   ? SpinKitWave(
-                      color: AppColors.primary,
+                      color:
+                          AppColors.primary.withAlpha(AppColors.inactiveAlpha),
                       size: 50,
                     )
                   : Container(),

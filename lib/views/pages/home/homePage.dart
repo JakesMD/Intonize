@@ -7,7 +7,7 @@ import 'package:intonize/views/pages/home/widgets/hertzText.dart';
 import 'package:intonize/views/pages/home/widgets/soundToggleIcon.dart';
 import 'package:intonize/views/pages/home/widgets/tuningGauge.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends GetView<TunerController> {
   HomePage({Key? key}) : super(key: key);
 
   @override
@@ -15,30 +15,54 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.homePage,
       body: Center(
-        child: GetBuilder<TunerController>(
-          initState: (_) => TunerController.to.startCapture(),
-          builder: (_) => Column(
+        child: controller.obx(
+          (state) => Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CentsText(
-                diffCents: TunerController.to.diffCents.value,
-                isActive: TunerController.to.isActive.value,
+                diffCents: controller.diffCents.value,
+                isActive: controller.isActive.value,
               ),
               TuningGauge(
-                diffCents: TunerController.to.diffCents.value,
-                isActive: TunerController.to.isActive.value,
-                note: TunerController.to.note.value,
-                isLoading: TunerController.to.status == RxStatus.loading(),
+                diffCents: controller.diffCents.value,
+                isActive: controller.isActive.value,
+                note: controller.note.value,
+                isLoading: controller.status.isLoading,
               ),
               HertzText(
-                frequency: TunerController.to.frequency.value,
-                isActive: TunerController.to.isActive.value,
+                frequency: controller.frequency.value,
+                isActive: controller.isActive.value,
               ),
               SizedBox(height: 30),
               SoundToggleIcon(
-                isLoading: TunerController.to.status == RxStatus.loading(),
-                isPiano: TunerController.to.isPiano.value,
-                onTap: TunerController.to.changeSound,
+                isLoading: controller.status.isLoading,
+                sound: controller.sound.value,
+                onTap: controller.toggleSound,
+              ),
+            ],
+          ),
+          onLoading: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CentsText(
+                diffCents: controller.diffCents.value,
+                isActive: controller.isActive.value,
+              ),
+              TuningGauge(
+                diffCents: controller.diffCents.value,
+                isActive: controller.isActive.value,
+                note: controller.note.value,
+                isLoading: controller.status.isLoading,
+              ),
+              HertzText(
+                frequency: controller.frequency.value,
+                isActive: controller.isActive.value,
+              ),
+              SizedBox(height: 30),
+              SoundToggleIcon(
+                isLoading: controller.status.isLoading,
+                sound: controller.sound.value,
+                onTap: controller.toggleSound,
               ),
             ],
           ),
