@@ -12,8 +12,7 @@ enum Sound { piano, synth }
 enum Status { loading, loaded, error }
 
 class TunerController extends GetxController with StateMixin<Status> {
-  static TunerController get to =>
-      Get.find(); // Removes the need to call Get.find() all the time.
+  static TunerController get to => Get.find(); // Removes the need to call Get.find() all the time.
 
   final FlutterAudioCapture _audioRecorder = FlutterAudioCapture();
   final PitchDetector _pitchDetectorDart = PitchDetector(44100, 2000);
@@ -31,8 +30,7 @@ class TunerController extends GetxController with StateMixin<Status> {
   Rx<Sound> sound = Sound.piano.obs;
 
   // Calculates the midi note number from the frequency.
-  int getMidiNoteFromFrequency(double freq) =>
-      (12 * log(freq / 440) / log(2) + 69).toInt();
+  int getMidiNoteFromFrequency(double freq) => (12 * log(freq / 440) / log(2) + 69).toInt();
 
   @override
   void onInit() {
@@ -41,8 +39,7 @@ class TunerController extends GetxController with StateMixin<Status> {
   }
 
   Future<void> _loadMidi() async {
-    _pianoByte = await rootBundle
-        .load('assets/Piano.sf2'); // Loads the sounds from the assets.
+    _pianoByte = await rootBundle.load('assets/Piano.sf2'); // Loads the sounds from the assets.
     _synthByte = await rootBundle.load('assets/Synth.sf2');
     _midi.prepare(sf2: _pianoByte); // Loads the piano sound.
   }
@@ -51,8 +48,7 @@ class TunerController extends GetxController with StateMixin<Status> {
     change(Status.loading, status: RxStatus.loading());
     await _loadMidi(); // Loads the midi sounds.
     print("Hi");
-    await _audioRecorder.start(listener, onError,
-        sampleRate: 44100, bufferSize: 3000); // Starts listening for notes.
+    await _audioRecorder.start(listener, onError, sampleRate: 44100, bufferSize: 3000); // Starts listening for notes.
     change(Status.loaded, status: RxStatus.success());
   }
 
